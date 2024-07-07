@@ -29,24 +29,37 @@ def generate_bot_responses(message, session):
 
 
 def record_current_answer(answer, current_question_id, session):
-    '''
-    Validates and stores the answer for the current question to django session.
-    '''
-    return True, ""
+   current_question = current_question_id.get_current_question()
+    if current_question is None:
+        return "No question to answer."
+
+    answer =session.strip()
+    if not answer:
+        return "Answer cannot be empty."
+    current_question_id.answers[current_question['id']] = answer
+    
+    return "Answer recorded."
 
 
 def get_next_question(current_question_id):
-    '''
-    Fetches the next question from the PYTHON_QUESTION_LIST based on the current_question_id.
-    '''
+   questions = answer.questions
+    for question in questions:
+        if question['id'] not in current_question_id.answers:
+            current_question_id.set_current_question(question)
+            return question['text']
 
-    return "dummy question", -1
+    current_question_id.set_current_question(None)
+    return None
 
 
 def generate_final_response(session):
-    '''
-    Creates a final result message including a score based on the answers
-    by the user for questions in the PYTHON_QUESTION_LIST.
-    '''
+   total_questions = len(answer.questions)
+    correct_answers = 0
 
-    return "dummy result"
+    for question in answer.questions:
+        qid = question['id']
+        if qid in current_question_id.answers and current_question_id.answers[qid] == question['correct_answer']:
+            correct_answers += 1
+
+    score = (correct_answers / total_questions) * 100
+    return f"Quiz completed! Your score is {correct_answers}/{total_questions} ({score}%)."
